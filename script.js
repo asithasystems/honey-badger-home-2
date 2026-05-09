@@ -1,3 +1,10 @@
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    databaseURL: "YOUR_DATABASE_URL"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 const users = [
     {
         username: 'alexa',
@@ -126,6 +133,21 @@ function init() {
             refreshDashboard();
         }
     }, 1000);
+}
+function startLiveSync() {
+    db.ref("devices").on("value", snapshot => {
+        const data = snapshot.val();
+
+        currentHouse.rooms.forEach(room => {
+            room.devices.forEach(device => {
+                if (data && data[device.id] !== undefined) {
+                    device.state = data[device.id] === 1;
+                }
+            });
+        });
+
+        refreshDashboard();
+    });
 }
 
 function populateUserSelect() {
@@ -371,11 +393,13 @@ function updateClock() {
 }
 
 function toggleDeviceState(deviceId) {
-    const allDevices = currentHouse.rooms.flatMap(room => room.devices);
-    const device = allDevices.find(item => item.id === deviceId);
-    if (!device) return;
-    device.state = !device.state;
-    refreshDashboard();
+    const ref = db.ref("devices/" + deviceId);
+
+    ref.once("value").then(snapshot => {
+        const current = snapshot.val();
+        const newState = current === 1 ? 0 : 1;
+        ref.set(newState);
+    });
 }
 
 function handleDashboardClick(event) {
@@ -406,3 +430,4 @@ autoRefreshToggle.addEventListener('change', event => {
 });
 
 init();
+startLiveSync();
