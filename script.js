@@ -1,7 +1,3 @@
-const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    databaseURL: "YOUR_DATABASE_URL"
-};
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
