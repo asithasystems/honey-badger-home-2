@@ -1,13 +1,3 @@
-// ================= FIREBASE CONFIG =================
-const firebaseConfig = {
-    apiKey: "AIzaSyDytlj1VjjGRh9B1A5lrfoqFRyhok1KU5I",
-    databaseURL: "https://honey-badger-home-1c37d-default-rtdb.firebaseio.com/"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-
 
 
 const users = [
