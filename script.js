@@ -383,18 +383,28 @@ function updateClock() {
 }
 
 function toggleDeviceState(deviceId) {
-    const allDevices = currentHouse.rooms.flatMap(room => room.devices);
-    const device = allDevices.find(item => item.id === deviceId);
-    if (!device) return;
-    device.state = !device.state;
-    refreshDashboard();
-}
+    const ref = db.ref("devices/" + deviceId);
 
-function handleDashboardClick(event) {
-    const button = event.target.closest('[data-device-id]');
-    if (!button) return;
-    const id = button.getAttribute('data-device-id');
-    toggleDeviceState(id);
+    ref.once("value").then(snapshot => {
+        const current = snapshot.val();
+        const newState = current === 1 ? 0 : 1;
+        ref.set(newState);
+    });
+}
+function startLiveSync() {
+    db.ref("devices").on("value", snapshot => {
+        const data = snapshot.val();
+
+        currentHouse.rooms.forEach(room => {
+            room.devices.forEach(device => {
+                if (data && data[device.id] !== undefined) {
+                    device.state = data[device.id] === 1;
+                }
+            });
+        });
+
+        refreshDashboard();
+    });
 }
 
 function handleLogout() {
@@ -417,4 +427,6 @@ autoRefreshToggle.addEventListener('change', event => {
     autoRefresh = event.target.checked;
 });
 
+
 init();
+startLiveSync();
